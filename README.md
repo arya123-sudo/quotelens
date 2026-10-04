@@ -73,6 +73,9 @@ MIT - see [LICENSE](LICENSE).
 ![Purchase summary](docs/docs-summary.png)
 
 *Explicit human approval generates the purchase summary and audit log.*
+![LLM provider path](docs/llm-live.png)
+
+*The pluggable AI path: the UI exposes an "LLM • live" provider badge and each stage labels the provider actually used. This captured run shows the offline MOCK fallback, so it does not claim a live model response.*
 
 ## Real AI (optional, never required)
 
