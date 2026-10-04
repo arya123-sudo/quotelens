@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --bg: #0b1020; --panel: #131a2e; --panel2: #1a2340; --line: #26314f;
   --txt: #e5eaf5; --mut: #9aa6c2; --acc: #60a5fa; --acc2: #4ade80;
   --warn: #fbbf24; --bad: #fb923c;
@@ -141,8 +141,8 @@ button:disabled { opacity: .4; cursor: default; }
   line-height: 1.55; white-space: pre-wrap; color: #d1fae5; margin-top: .5rem; }
 .q-pdf .chatbubble { background: #1e1b12; border-color: #4a3d1d; color: #fde68a; }
 .illegible { background: #7c2d12; color: #fed7aa; padding: 0 .3rem; border-radius: .25rem; }
-.qtable { width: 100%; border-collapse: collapse; background: var(--panel);
-  border: 1px solid var(--line); border-radius: .7rem; overflow: hidden;
+.qtable { width: 100%; border-collapse: collapse; background: var(--panel); display: block;
+  border: 1px solid var(--line); border-radius: .7rem; overflow-x: auto;
   font-size: .88rem; margin: 1rem 0; }
 .qtable th, .qtable td { padding: .7rem .8rem; text-align: left; border-bottom: 1px solid var(--line); }
 .qtable th { color: var(--mut); font-weight: 600; font-size: .78rem; text-transform: uppercase; }
