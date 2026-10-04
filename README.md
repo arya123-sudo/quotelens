@@ -8,6 +8,12 @@ the spend. **Agents propose, humans dispose.**
 
 **Live demo:** https://quotelens-xi.vercel.app/#/demo
 
+## How it works
+
+Extract -> Normalize -> Compare -> Recommend -> Human approval -> Purchase summary
+
+The LLM explains quotes and flags uncertainty. Deterministic code computes every rupee. The human approves every spend.
+
 ## Run it
 
 No build step. Serve the folder statically and open it:
