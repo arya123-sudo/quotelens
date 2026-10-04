@@ -1,4 +1,4 @@
-﻿// The 7-step judge tour for QuoteLens. Frozen demo script — see PROJECT_SPEC.md §4.
+// The 7-step judge tour for QuoteLens. Frozen demo script — see PROJECT_SPEC.md —4.
 import { runPipeline, AGENTS } from "../agents/pipeline.js";
 import { trueUnitCost, orderTotal } from "../data/quotes.js";
 import { buildMarkdown, buildHTML, download } from "./export.js";
@@ -52,9 +52,9 @@ function rail() {
 
 function nav() {
   return `<div class="nav">
-    <button data-go="${S.step - 1}" ${S.step === 0 ? "disabled" : ""}>← Back</button>
+    <button data-go="${S.step - 1}" ${S.step === 0 ? "disabled" : ""}>? Back</button>
     <span class="counter">Step ${S.step + 1} of ${STEP_TITLES.length}</span>
-    <button data-go="${S.step + 1}" ${S.step === STEP_TITLES.length - 1 ? "disabled" : ""}>Next →</button>
+    <button data-go="${S.step + 1}" ${S.step === STEP_TITLES.length - 1 ? "disabled" : ""}>Next ?</button>
   </div>`;
 }
 
@@ -67,9 +67,9 @@ function rawHTML(raw) {
 }
 
 function quoteCard(q) {
-  const ch = { "whatsapp-image": "📷 WhatsApp photo", pdf: "📄 PDF", "whatsapp-text": "💬 WhatsApp text" }[q.channel];
+  const ch = { "whatsapp-image": "?? WhatsApp photo", pdf: "?? PDF", "whatsapp-text": "?? WhatsApp text" }[q.channel];
   const photoNote = q.channel === "whatsapp-image"
-    ? `<div class="photonote">skewed photo · Hindi/English mix · one handwritten correction — the agent flags what it can't read instead of guessing</div>`
+    ? `<div class="photonote">skewed photo — Hindi/English mix — one handwritten correction — the agent flags what it can't read instead of guessing</div>`
     : "";
   return `<div class="card qcard q-${esc(q.channel)}">
     <div class="card-top"><span class="etype">${ch}</span><span class="etime">${esc(q.receivedAt.slice(0, 16).replace("T", " "))}</span></div>
@@ -100,18 +100,17 @@ function costTable(scn, highlight) {
 
 function agentCards() {
   const { results, provider, fellBack } = S.pipeline;
-  const badge = provider === "llm" ? "LLM · live" : fellBack ? "MOCK · offline (LLM unreachable — fell back)" : "MOCK · offline";
+  const badge = provider === "llm" ? "LLM — live" : fellBack ? "MOCK — offline (LLM unreachable — fell back)" : "MOCK — offline";
   return `<p class="lede">Provider: <span class="badge">${badge}</span></p>
   <div class="agents">${AGENTS.map((a) => {
     const r = results[a.id] || {};
     return `<div class="agent"><div class="agent-head"><strong>${esc(a.label)}</strong>
-      <span class="dur">${r.durationMs ?? "—"}ms</span></div>
-      <span class="prov">Provider: ${r.provider === "llm" ? "LLM" : (r.fellBack ? "mock (fallback)" : "mock")}</span>
+      <span class="dur">${r.durationMs ?? "—"}ms</span> <span class="prov">${r.provider === "llm" ? "LLM" : (r.fellBack ? "mock (fallback)" : "mock")}</span></div>
       <div class="adesc">${esc(a.desc)}</div>
       <p>${esc(r.summary || "")}</p>
       <ul>${(r.findings || []).map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
       <div class="refs">${confBadge(r.confidence || "uncertain")}
-      <span class="erefs">${(r.evidenceRefs || []).map(esc).join(" · ")}</span></div></div>`;
+      <span class="erefs">${(r.evidenceRefs || []).map(esc).join(" — ")}</span></div></div>`;
   }).join("")}</div>`;
 }
 
@@ -124,13 +123,13 @@ function render() {
   const steps = [
     // 1 — The chaos
     () => `<div class="hero"><div class="badge-row">
-        <span class="badge">DEMO · 100% synthetic</span><span class="badge">${esc(scn.id)}</span></div>
+        <span class="badge">DEMO — 100% synthetic</span><span class="badge">${esc(scn.id)}</span></div>
       <h2>${esc(b.name)} needs ${esc(b.need)}</h2>
-      <p class="lede">${esc(b.location)} · Three suppliers reply on WhatsApp — a photo, a PDF,
-      a text. Three formats, zero comparability. The owner compares them in their head…
+      <p class="lede">${esc(b.location)} — Three suppliers reply on WhatsApp — a photo, a PDF,
+      a text. Three formats, zero comparability. The owner compares them in their head—
       and usually overpays.</p>
       <div class="grid">${scn.quotes.map(quoteCard).join("")}</div>
-      <button class="primary" data-go="1" style="margin-top:1.2rem">Hand them to the agents →</button></div>`,
+      <button class="primary" data-go="1" style="margin-top:1.2rem">Hand them to the agents ?</button></div>`,
 
     // 2 — Extract (runs the pipeline)
     () => `<h2>Extract</h2>
@@ -140,13 +139,13 @@ function render() {
       ${S.pipeline ? `<div class="agents">${AGENTS.filter(a => a.id === "extract").map((a) => {
           const r = S.pipeline.results[a.id] || {};
           return `<div class="agent"><div class="agent-head"><strong>${esc(a.label)}</strong>
-            <span class="dur">${r.durationMs ?? "—"}ms</span></div>
+            <span class="dur">${r.durationMs ?? "—"}ms</span> <span class="prov">${r.provider === "llm" ? "LLM" : (r.fellBack ? "mock (fallback)" : "mock")}</span></div>
             <p>${esc(r.summary || "")}</p>
             <ul>${(r.findings || []).map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
             <div class="refs">${confBadge(r.confidence || "uncertain")}</div></div>`;
         }).join("")}</div>
         <button class="primary" id="runBtn" ${S.running ? "disabled" : ""}>Re-run pipeline</button>`
-      : `<button class="primary" id="runBtn" ${S.running ? "disabled" : ""}>Run 4-agent pipeline →</button>`}
+      : `<button class="primary" id="runBtn" ${S.running ? "disabled" : ""}>Run 4-agent pipeline ?</button>`}
       <div id="runStatus"></div>`,
 
     // 3 — True-cost table
@@ -160,14 +159,14 @@ function render() {
         ? `<p class="lede">Rs ${gstTrap.x.extracted.unitPrice.toLocaleString("en-IN")} <i>looked</i> like the honest pick — until ${Math.round(gstTrap.x.extracted.gstRate * 100)}% GST landed on top of it.</p>`
         : "";
       return S.pipeline ? `<h2>True-cost table</h2>
-      <p class="lede">Normalize agent: true per-unit cost = headline + GST + delivery ÷ ${b.quantity}.
+      <p class="lede">Normalize agent: true per-unit cost = headline + GST + delivery — ${b.quantity}.
       Deterministic math — no LLM needed. <b>Reliability is the feature.</b></p>
       ${costTable(scn, cheapestId)}
-      <p class="lede">🔢 <code>true = unit + (GST extra ? unit×rate : 0) + delivery ÷ qty</code> —
+      <p class="lede">?? <code>true = unit + (GST extra ? unit—rate : 0) + delivery — qty</code> —
       computed deterministically in code. The LLM explains the result; it never does the math.</p>
       ${trapLine}`
       : `<h2>True-cost table</h2><p class="lede">Run the pipeline first (step 2).</p>
-        <button class="primary" data-go="1">← Go to Extract</button>`;
+        <button class="primary" data-go="1">? Go to Extract</button>`;
     },
 
     // 4 — Compare & recommend
@@ -176,14 +175,14 @@ function render() {
         const a = AGENTS.find((x) => x.id === id);
         const r = S.pipeline.results[id] || {};
         return `<div class="agent"><div class="agent-head"><strong>${esc(a.label)}</strong>
-          <span class="dur">${r.durationMs ?? "—"}ms</span></div>
+          <span class="dur">${r.durationMs ?? "—"}ms</span> <span class="prov">${r.provider === "llm" ? "LLM" : (r.fellBack ? "mock (fallback)" : "mock")}</span></div>
           <p>${esc(r.summary || "")}</p>
           <ul>${(r.findings || []).map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
           <div class="refs">${confBadge(r.confidence || "uncertain")}</div></div>`;
       }).join("")}</div>
       <p class="lede ethics">The agent recommends. It never decides — that's your job, next step.</p>`
       : `<h2>Compare & recommend</h2><p class="lede">Run the pipeline first (step 2).</p>
-        <button class="primary" data-go="1">← Go to Extract</button>`,
+        <button class="primary" data-go="1">? Go to Extract</button>`,
 
     // 5 — You approve (THE GATE)
     () => {
@@ -191,7 +190,7 @@ function render() {
       const flags = q ? q.unreadable : [];
       const allConfirmed = q && flags.every((_, i) => S.confirmed[q.id + ":" + i]);
       return `<h2>You approve</h2>
-      <div class="notice">⛔ The agent cannot spend your money. Pick a supplier — and confirm
+      <div class="notice">? The agent cannot spend your money. Pick a supplier — and confirm
       every flagged uncertainty with your own eyes before the approval unlocks.</div>
       <div class="grid">${scn.quotes.map((qq) => {
         const t = trueUnitCost(qq, b.quantity);
@@ -200,22 +199,22 @@ function render() {
           <h4>${esc(qq.supplier)}</h4>
           <div class="gate-price">${inr(t)}<span>/unit true</span></div>
           <div class="mut">Needs min order ${qq.extracted.minOrder} ${esc(b.unit)} — you need ${b.quantity}. Excluded from this order.</div>
-          <div class="badge">⛔ min-order trap</div>
+          <div class="badge">? min-order trap</div>
         </div>`;
         return `<button class="card gate ${S.choice === qq.id ? "chosen" : ""}" data-pick="${esc(qq.id)}">
           <h4>${esc(qq.supplier)}</h4>
           <div class="gate-price">${inr(t)}<span>/unit true</span></div>
-          <div class="mut">${inr(orderTotal(qq, b.quantity))} total · ${qq.extracted.deliveryDays}d delivery · ${qq.extracted.warrantyMonths ?? "—"} mo warranty</div>
-          ${S.choice === qq.id ? `<div class="badge">✓ your pick</div>` : ""}
+          <div class="mut">${inr(orderTotal(qq, b.quantity))} total — ${qq.extracted.deliveryDays}d delivery — ${qq.extracted.warrantyMonths ?? "—"} mo warranty</div>
+          ${S.choice === qq.id ? `<div class="badge">? your pick</div>` : ""}
         </button>`;
       }).join("")}</div>
-      ${q && flags.length ? `<h3>⚠️ Confirm the flags — approval stays locked until you do</h3>
+      ${q && flags.length ? `<h3>?? Confirm the flags — approval stays locked until you do</h3>
         <div class="actions">${flags.map((f, i) => `<label class="action">
           <input type="checkbox" data-flag="${esc(q.id + ":" + i)}" ${S.confirmed[q.id + ":" + i] ? "checked" : ""}>
           <span>${esc(f)}</span></label>`).join("")}</div>` : ""}
       ${S.choice ? `<button class="primary" id="approveBtn" data-go="5" style="margin-top:1.2rem"
         ${flags.length && !allConfirmed ? "disabled" : ""}>` +
-        (flags.length && !allConfirmed ? `🔒 Confirm ${flags.length} flag(s) to unlock approval` : `Generate purchase summary →`) +
+        (flags.length && !allConfirmed ? `?? Confirm ${flags.length} flag(s) to unlock approval` : `Generate purchase summary ?`) +
         `</button>` : ""}`;
     },
 
@@ -223,27 +222,27 @@ function render() {
     () => {
       if (!S.approved)
         return `<h2>Purchase summary</h2><p class="lede">Approve a supplier first (step 5) — the summary unlocks only after your explicit approval.</p>
-          <button class="primary" data-go="4">← Go to approval</button>`;
+          <button class="primary" data-go="4">? Go to approval</button>`;
       const q = scn.quotes.find((x) => x.id === S.choice);
       const t = trueUnitCost(q, b.quantity);
       return `<h2>Purchase summary</h2>
       <div class="card po">
-        <h4>🧾 Purchase summary — ${esc(scn.id)}</h4>
-        <p><b>${esc(b.name)}</b> · ${esc(b.need)} · Qty ${b.quantity}</p>
-        <p>Supplier: <b>${esc(q.supplier)}</b> · True cost <b>${inr(t)}/unit</b> · Order total <b>${inr(orderTotal(q, b.quantity))}</b></p>
-        <p class="mut">GST ${q.extracted.gst} · ${q.extracted.deliveryDays}-day delivery · ${q.extracted.warrantyMonths ?? "—"}-month warranty · ${q.extracted.advancePct}% advance · valid ${q.extracted.validDays} days</p>
-        <p class="mut">Approved by human · ${new Date().toLocaleString("en-IN")}</p>
+        <h4>?? Purchase summary — ${esc(scn.id)}</h4>
+        <p><b>${esc(b.name)}</b> — ${esc(b.need)} — Qty ${b.quantity}</p>
+        <p>Supplier: <b>${esc(q.supplier)}</b> — True cost <b>${inr(t)}/unit</b> — Order total <b>${inr(orderTotal(q, b.quantity))}</b></p>
+        <p class="mut">GST ${q.extracted.gst} — ${q.extracted.deliveryDays}-day delivery — ${q.extracted.warrantyMonths ?? "—"}-month warranty — ${q.extracted.advancePct}% advance — valid ${q.extracted.validDays} days</p>
+        <p class="mut">Approved by human — ${new Date().toLocaleString("en-IN")}</p>
       </div>
       <div class="export-row">
-        <button class="primary" id="dlMd">⬇ Summary (.md)</button>
-        <button class="primary" id="dlHtml">⬇ Summary (.html)</button>
-        <button id="printBtn">🖨 Print / PDF</button>
+        <button class="primary" id="dlMd">? Summary (.md)</button>
+        <button class="primary" id="dlHtml">? Summary (.html)</button>
+        <button id="printBtn">?? Print / PDF</button>
       </div>
       ${(() => {
         const log = approvalLog();
         return log.length ? `<h3>Approval audit trail</h3><ol class="timeline">${
           log.slice(0, 5).map((e) => `<li><span class="tt">${esc(e.at.slice(0, 16).replace("T", " "))}</span>` +
-            `<span>${esc(e.supplier)} — ${inr(e.total)} <span class="mut">(${esc(e.scenario)} · ${esc(e.quote)})</span></span></li>`).join("")
+            `<span>${esc(e.supplier)} — ${inr(e.total)} <span class="mut">(${esc(e.scenario)} — ${esc(e.quote)})</span></span></li>`).join("")
         }</ol>` : "";
       })()}`;
     },
@@ -251,13 +250,13 @@ function render() {
     // 7 — Why QuoteLens
     () => `<h2>Why QuoteLens</h2>
       <div class="grid">
-        <div class="card"><h4>🎯 The gap</h4><p>Enterprise suites serve procurement teams. Sell-side tools help you <i>send</i> quotes. B2B marketplaces aggregate sellers. We found <b>no WhatsApp-first buy-side agent for micro-businesses</b> — nothing reads the messy quotes already sitting in a shop owner's chat.</p></div>
-        <div class="card"><h4>🤖 Agents that earn trust</h4><p>Extract → normalize → compare → recommend. Deterministic math where it counts, LLM reasoning where it helps, uncertainty flagged everywhere.</p></div>
-        <div class="card"><h4>🙋 Human in control</h4><p>The agent proposes, you dispose. No purchase happens without your approval — the money decision stays human, by design.</p></div>
+        <div class="card"><h4>?? The gap</h4><p>Enterprise suites serve procurement teams. Sell-side tools help you <i>send</i> quotes. B2B marketplaces aggregate sellers. We found <b>no WhatsApp-first buy-side agent for micro-businesses</b> — nothing reads the messy quotes already sitting in a shop owner's chat.</p></div>
+        <div class="card"><h4>?? Agents that earn trust</h4><p>Extract ? normalize ? compare ? recommend. Deterministic math where it counts, LLM reasoning where it helps, uncertainty flagged everywhere.</p></div>
+        <div class="card"><h4>?? Human in control</h4><p>The agent proposes, you dispose. No purchase happens without your approval — the money decision stays human, by design.</p></div>
       </div>
-      <p class="lede">Honest by design: 100% synthetic demo data · provider badged MOCK/LLM ·
-      unreadable spans flagged, never hidden · no real money moves.</p>
-      <button class="primary" data-go="0">↺ Replay the tour</button>`,
+      <p class="lede">Honest by design: 100% synthetic demo data — provider badged MOCK/LLM —
+      unreadable spans flagged, never hidden — no real money moves.</p>
+      <button class="primary" data-go="0">? Replay the tour</button>`,
   ];
 
   S.mount.innerHTML = `<div class="tour">${rail()}
@@ -297,10 +296,10 @@ function render() {
       await runPipeline(scn, ({ type, agent, result }) => {
         if (!status) return;
         if (type === "start")
-          status.innerHTML += `<div class="runline" id="rl-${agent}">⏳ ${esc(agent)}…</div>`;
+          status.innerHTML += `<div class="runline" id="rl-${agent}">? ${esc(agent)}—</div>`;
         else {
           const el = status.querySelector(`#rl-${agent}`);
-          if (el) el.innerHTML = `✅ ${esc(agent)} — ${esc(String(result.summary || "").slice(0, 90))}…`;
+          if (el) el.innerHTML = `? ${esc(agent)} — ${esc(String(result.summary || "").slice(0, 90))}—`;
         }
       }).then((p) => { if (S.runToken === myRun) S.pipeline = p; });
     } finally {
@@ -317,3 +316,4 @@ function render() {
   const printBtn = S.mount.querySelector("#printBtn");
   if (printBtn) printBtn.addEventListener("click", () => window.print());
 }
+
