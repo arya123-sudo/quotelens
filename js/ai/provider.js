@@ -92,7 +92,7 @@ function derive(agent, scn) {
       const runner = pool[1];
       const findings = [
         `1st — ${cheapestF.q.id} ${cheapestF.q.supplier}: ${inr(cheapestF.true)}/unit all-in, ` +
-          `${cheapestF.q.extracted.deliveryDays}-day delivery. Trade-off: ${cheapestF.q.extracted.warrantyMonths}-month warranty, ${cheapestF.q.extracted.advancePct}% advance.`,
+          `${cheapestF.q.extracted.deliveryDays}-day delivery. Trade-off: ${cheapestF.q.extracted.warrantyMonths ?? "—"}-month warranty, ${cheapestF.q.extracted.advancePct}% advance.`,
       ];
       if (runner) findings.push(
         `2nd — ${runner.q.id} ${runner.q.supplier}: ${inr(runner.true)}/unit ` +
