@@ -38,6 +38,34 @@ Sharma Electricals (Jaipur) needs 50 ceiling fans. Three suppliers reply on What
 and the cheapest headline price hides Rs 333/unit in GST. True costs: Rs 2,193 vs
 Rs 1,790 vs Rs 2,148 per unit. The agents find it; the human decides.
 
+## Screenshots
+
+
+
+
+
+Three supplier quotes arrive as a WhatsApp photo, a PDF, and a text message.
+
+
+
+
+
+The normalize agent's apples-to-apples table — the Rs 1,850 headline hides Rs 333/unit in GST.
+
+
+
+
+
+
+Approval stays locked until every flagged uncertainty is confirmed by eye.
+
+
+
+
+
+
+Explicit human approval generates the purchase summary and audit log.
+
 ## Real AI (optional, never required)
 
 Settings → paste an OpenAI-compatible `baseUrl` + `apiKey` + `model`.

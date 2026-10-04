@@ -1,0 +1,38 @@
+diff -u -r orig/js/main.js patched/js/main.js
+--- orig/js/main.js	2026-10-04 07:41:55.108567400 +0000
++++ patched/js/main.js	2026-10-04 07:41:55.146421819 +0000
+@@ -32,7 +32,7 @@
+   view.innerHTML = `<div class="why">
+     <h1>Why QuoteLens</h1>
+     <p class="lede"><b>"Wortal helps you send quotes. Nothing helps you read them."</b></p>
+-    <p class="lede">India's ~6.3 crore MSMEs run on WhatsApp. Supplier quotes arrive as photos,
++    <p class="lede">India's ~7.3 crore micro-enterprises coordinate on WhatsApp. Supplier quotes arrive as photos,
+     PDFs, and text notes — and the owner compares them in their head. Enterprise buyers have
+     procurement suites; sell-side tools help you <i>send</i> quotes. Nobody helps a
+     micro-business <i>read</i> the quotes coming at it.</p>
+diff -u -r orig/js/ui/export.js patched/js/ui/export.js
+--- orig/js/ui/export.js	2026-10-04 07:41:55.102481178 +0000
++++ patched/js/ui/export.js	2026-10-04 07:41:55.146355720 +0000
+@@ -21,7 +21,7 @@
+   L.push(`| Supplier | Headline | True /unit | Order total |`);
+   L.push(`|---|---|---|---|`);
+   for (const x of scn.quotes)
+-    L.push(`| ${x.supplier} | ${inr(x.extracted.unitPrice)} | ${inr(trueUnitCost(x, qty))} | ${inr(orderTotal(x, qty))} |`);
++    L.push(`| ${x.supplier} | ${inr(x.extracted.unitPrice)}${x.extracted.perUnitQty !== 1 ? ` per ${x.extracted.perUnitQty} ${x.extracted.perUnit}` : ""} | ${inr(trueUnitCost(x, qty))} | ${inr(orderTotal(x, qty))} |`);
+   L.push("", `## Approved supplier`, `**${q.supplier}** — ${inr(t)}/unit, order total **${inr(total)}**`,
+     `GST ${e.gst} · ${e.deliveryDays}-day delivery · ${e.warrantyMonths ?? "—"}-month warranty · ${e.advancePct}% advance · valid ${e.validDays} days`, "");
+   if (pipeline) {
+diff -u -r orig/js/ui/tour.js patched/js/ui/tour.js
+--- orig/js/ui/tour.js	2026-10-04 07:41:55.096015857 +0000
++++ patched/js/ui/tour.js	2026-10-04 07:41:55.146230051 +0000
+@@ -85,8 +85,8 @@
+     const t = trueUnitCost(q, qty);
+     return `<tr class="${q.id === highlight ? "winner" : ""}">
+       <td><b>${esc(q.supplier)}</b><br><span class="mut">${esc(q.id)}</span></td>
+-      <td>${inr(e.unitPrice)}</td>
+-      <td>${e.gst === "extra" ? `+${inr(Math.round(e.unitPrice * e.gstRate))}` : e.gst === "included" ? "incl." : "?"}</td>
++      <td>${inr(e.unitPrice)}${e.perUnitQty !== 1 ? ` <span class="mut">per ${e.perUnitQty} ${esc(e.perUnit)}</span>` : ""}</td>
++      <td>${e.gst === "extra" ? `+${inr(Math.round((e.unitPrice / (e.perUnitQty || 1)) * e.gstRate))}` : e.gst === "included" ? "incl." : "?"}</td>
+       <td>${e.deliveryDays}d${e.deliveryCharge ? ` (+${inr(e.deliveryCharge)})` : " free"}</td>
+       <td>${e.warrantyMonths ?? "—"} mo</td>
+       <td>${e.advancePct}%</td>
