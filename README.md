@@ -1,4 +1,4 @@
-# QuoteLens — Purchase-approval agent for small businesses (WCC Launchpad 30)
+﻿# QuoteLens — Purchase-approval agent for small businesses (WCC Launchpad 30)
 
 Supplier quotes arrive as WhatsApp photos, PDFs, and text notes. Agents extract,
 normalize, and compare them into one honest true-cost table — and the human approves
@@ -39,31 +39,24 @@ and the cheapest headline price hides Rs 333/unit in GST. True costs: Rs 2,193 v
 Rs 1,790 vs Rs 2,148 per unit. The agents find it; the human decides.
 
 ## Screenshots
-docs-chaos.png
 
+## Screenshots
 
+![Supplier quotes](docs/quote-inputs.png)
 
-Three supplier quotes arrive as a WhatsApp photo, a PDF, and a text message.
+*Three supplier quotes arrive as a WhatsApp photo, a PDF, and a text message.*
 
-docs-true-cost.png
+![Normalized comparison](docs/normalized-table.png)
 
+*The normalize agent's apples-to-apples table — the Rs 1,850 headline hides Rs 333/unit in GST.*
 
+![Human approval](docs/human-approval.png)
 
-The normalize agent's apples-to-apples table — the Rs 1,850 headline hides Rs 333/unit in GST.
+*Approval stays locked until every flagged uncertainty is confirmed by eye.*
 
-docs-gate-locked.png
+![Purchase summary](docs/purchase-summary.png)
 
-
-
-
-Approval stays locked until every flagged uncertainty is confirmed by eye.
-
-
-
-docs-summary.png
-
-
-Explicit human approval generates the purchase summary and audit log.
+*Explicit human approval generates the purchase summary and audit log.*
 
 ## Real AI (optional, never required)
 
