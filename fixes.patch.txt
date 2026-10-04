@@ -23,7 +23,7 @@ diff -u -r orig/js/ui/export.js patched/js/ui/export.js
      `GST ${e.gst} · ${e.deliveryDays}-day delivery · ${e.warrantyMonths ?? "—"}-month warranty · ${e.advancePct}% advance · valid ${e.validDays} days`, "");
    if (pipeline) {
 diff -u -r orig/js/ui/tour.js patched/js/ui/tour.js
---- orig/js/ui/tour.js	2026-10-04 07:41:55.096015857 +0000
+--- orig/js/ui/tour.js	2026-10-04 07:41:55.108567400 +0000
 +++ patched/js/ui/tour.js	2026-10-04 07:41:55.146230051 +0000
 @@ -85,8 +85,8 @@
      const t = trueUnitCost(q, qty);

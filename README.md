@@ -40,19 +40,19 @@ Rs 1,790 vs Rs 2,148 per unit. The agents find it; the human decides.
 
 ## Screenshots
 
-
+![alt text](docs-chaos.png)
 
 
 
 Three supplier quotes arrive as a WhatsApp photo, a PDF, and a text message.
 
-
+![alt text](docs-true-cost.png)
 
 
 
 The normalize agent's apples-to-apples table — the Rs 1,850 headline hides Rs 333/unit in GST.
 
-
+![alt text](docs-gate-locked.png)
 
 
 
@@ -61,7 +61,7 @@ Approval stays locked until every flagged uncertainty is confirmed by eye.
 
 
 
-
+![alt text](docs-summary.png)
 
 
 Explicit human approval generates the purchase summary and audit log.
