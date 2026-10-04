@@ -42,7 +42,7 @@ Three synthetic purchasing scenarios ship with the demo, messy on purpose:
 - SCN-2026-002: 200 kg basmati rice. A pack-size trap: Rs 2,250 per 25 kg vs Rs 920 per 10 kg vs Rs 94/kg. True costs: Rs 102 vs Rs 91 vs Rs 97 per kg.
 - SCN-2026-003: 20 phone display assemblies for BenchCraft Mobile Repairs (Ahmedabad). One quote is a degraded photo with an illegible warranty seal (flagged; approval locks until confirmed). The cheapest supplier (Rs 760/unit) is disqualified on MOQ (40 > 20). Winner: ClearView Components at Rs 820/unit.
 
-The agents find it; the human decides. Three suppliers reply on WhatsApp �
+The agents find it; the human decides. �
 
 
 
