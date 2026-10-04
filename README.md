@@ -34,11 +34,21 @@ js/data/quotes.js     synthetic purchasing scenarios (SCN-2026-001 �)
 js/data/schema.md     the scenario JSON contract (for generating more)
 ```
 
-## The demo scenario
+## The demo scenarios
 
-Sharma Electricals (Jaipur) needs 50 ceiling fans. Three suppliers reply on WhatsApp �
-and the cheapest headline price hides Rs 333/unit in GST. True costs: Rs 2,193 vs
-Rs 1,790 vs Rs 2,148 per unit. The agents find it; the human decides.
+Three synthetic purchasing scenarios ship with the demo, messy on purpose:
+
+- SCN-2026-001: 50 ceiling fans for Sharma Electricals (Jaipur). The cheapest headline (Rs 1,850) hides Rs 333/unit in GST. True costs: Rs 2,193 vs Rs 1,790 vs Rs 2,148 per unit. Winner: Shree Balaji Enterprises - saving Rs 403/unit, Rs 20,150 across the order.
+- SCN-2026-002: 200 kg basmati rice. A pack-size trap: Rs 2,250 per 25 kg vs Rs 920 per 10 kg vs Rs 94/kg. True costs: Rs 102 vs Rs 91 vs Rs 97 per kg.
+- SCN-2026-003: 20 phone display assemblies for BenchCraft Mobile Repairs (Ahmedabad). One quote is a degraded photo with an illegible warranty seal (flagged; approval locks until confirmed). The cheapest supplier (Rs 760/unit) is disqualified on MOQ (40 > 20). Winner: ClearView Components at Rs 820/unit.
+
+The agents find it; the human decides. Three suppliers reply on WhatsApp �
+
+
+
+## License
+
+MIT - see [LICENSE](LICENSE).
 
 ## Roadmap
 
