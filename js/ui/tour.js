@@ -149,15 +149,25 @@ function render() {
       <div id="runStatus"></div>`,
 
     // 3 — True-cost table
-    () => S.pipeline ? `<h2>True-cost table</h2>
+    () => {
+      // Data-driven "looked honest until GST" line — never hardcoded per scenario.
+      const gstTrap = scn.quotes
+        .filter((x) => x.extracted.gst === "extra")
+        .map((x) => ({ x, add: Math.round((x.extracted.unitPrice / (x.extracted.perUnitQty || 1)) * x.extracted.gstRate) }))
+        .sort((a, b) => b.add - a.add)[0];
+      const trapLine = gstTrap
+        ? `<p class="lede">Rs ${gstTrap.x.extracted.unitPrice.toLocaleString("en-IN")} <i>looked</i> like the honest pick — until ${Math.round(gstTrap.x.extracted.gstRate * 100)}% GST landed on top of it.</p>`
+        : "";
+      return S.pipeline ? `<h2>True-cost table</h2>
       <p class="lede">Normalize agent: true per-unit cost = headline + GST + delivery ÷ ${b.quantity}.
       Deterministic math — no LLM needed. <b>Reliability is the feature.</b></p>
       ${costTable(scn, cheapestId)}
       <p class="lede">🔢 <code>true = unit + (GST extra ? unit×rate : 0) + delivery ÷ qty</code> —
       computed deterministically in code. The LLM explains the result; it never does the math.</p>
-      <p class="lede">Rs 1,850 <i>looked</i> like the honest middle pick — until 18% GST landed on top of it.</p>`
+      ${trapLine}`
       : `<h2>True-cost table</h2><p class="lede">Run the pipeline first (step 2).</p>
-        <button class="primary" data-go="1">← Go to Extract</button>`,
+        <button class="primary" data-go="1">← Go to Extract</button>`;
+    },
 
     // 4 — Compare & recommend
     () => S.pipeline ? `<h2>Compare & recommend</h2>

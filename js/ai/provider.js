@@ -37,7 +37,10 @@ function derive(agent, scn) {
     case "extract": {
       const findings = scn.quotes.map((q) => {
         const e = q.extracted;
-        const base = `${q.id} ${q.supplier}: Rs ${e.unitPrice}/unit, GST ${e.gst}, ` +
+        const priceLabel = e.perUnitQty !== 1
+          ? `Rs ${e.unitPrice.toLocaleString("en-IN")} per ${e.perUnitQty} ${e.perUnit}`
+          : `Rs ${e.unitPrice}/unit`;
+        const base = `${q.id} ${q.supplier}: ${priceLabel}, GST ${e.gst}, ` +
           `${e.deliveryDays}d delivery, ${e.warrantyMonths ?? "no"} warranty, ${e.advancePct}% advance`;
         return q.unreadable.length ? base + ` — UNREADABLE: ${q.unreadable.join("; ")}` : base;
       });
@@ -68,10 +71,12 @@ function derive(agent, scn) {
       const findings = [
         `Cheapest true cost: ${cheapest.q.id} ${cheapest.q.supplier} at ${inr(cheapest.true)}/unit`,
         `Fastest delivery: ${fastest.q.id} (${fastest.q.extracted.deliveryDays} days)`,
-        `Longest warranty: ${bestWarranty.q.id} (${bestWarranty.q.extracted.warrantyMonths} months)`,
+        `Longest warranty: ${bestWarranty.q.id} (${bestWarranty.q.extracted.warrantyMonths ?? "—"} months)`,
       ];
       for (const { q, true: t } of rows) {
         const e = q.extracted;
+        if (e.perUnitQty !== 1)
+          findings.push(`Unit conversion — ${q.id}: Rs ${e.unitPrice.toLocaleString("en-IN")} per ${e.perUnitQty} ${e.perUnit} → Rs ${Math.round(e.unitPrice / e.perUnitQty)}/${e.perUnit}`);
         if (e.gst === "extra")
           findings.push(`Hidden cost — ${q.id}: headline Rs ${e.unitPrice} hides ${inr(Math.round((e.unitPrice / (e.perUnitQty || 1)) * e.gstRate))}/unit GST → true ${inr(t)}`);
         if (e.minOrder > qty)
