@@ -1,4 +1,4 @@
-// Pluggable AI provider layer for QuoteLens.
+﻿// Pluggable AI provider layer for QuoteLens.
 // MockProvider  — deterministic, fully offline. Honestly badged DEMO/MOCK in the UI.
 // LLMProvider  — OpenAI-compatible endpoint, configured at runtime via Settings.
 //                Keys live in localStorage ONLY. Never committed, never in the repo.
@@ -161,7 +161,7 @@ export class LLMProvider {
   }
   async analyze(agent, { scenario, prior }) {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 20000);
+    const timer = setTimeout(() => ctrl.abort(), 8000);
     try {
       const base = this.cfg.baseUrl.replace(/\/$/, "");
       const res = await fetch(`${base}/chat/completions`, {
