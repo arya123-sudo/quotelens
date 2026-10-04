@@ -67,7 +67,7 @@ export const SCENARIOS = [
         receivedAt: "2026-10-01T14:22:00+05:30",
         rawText:
           "Khan Suppliers here bhai. Best rate for 1200mm fan: Rs 1820 per pc + GST 18%.\n" +
-          "Free delivery. 2 year warranty full.\n" +
+          "Free delivery in 5 days. 2 year warranty full.\n" +
           "Minimum order 100 pcs. 25% advance.\n" +
           "Rate valid till Sunday.",
         extracted: {
@@ -82,14 +82,19 @@ export const SCENARIOS = [
   },
 ];
 
-// True per-unit cost: price + GST (if extra) + delivery amortized over quantity.
-export function trueUnitCost(q, qty) {
+// Exact (unrounded) per-unit cost. Rounding happens once, at display/total time.
+function exactUnitCost(q, qty) {
   const e = q.extracted;
   const perBase = e.unitPrice / (e.perUnitQty || 1);
   const withGst = e.gst === "extra" ? perBase * (1 + e.gstRate) : perBase;
-  return Math.round(withGst + e.deliveryCharge / qty);
+  return withGst + e.deliveryCharge / qty;
+}
+
+// True per-unit cost: price + GST (if extra) + delivery amortized over quantity.
+export function trueUnitCost(q, qty) {
+  return Math.round(exactUnitCost(q, qty));
 }
 
 export function orderTotal(q, qty) {
-  return trueUnitCost(q, qty) * qty;
+  return Math.round(exactUnitCost(q, qty) * qty);
 }

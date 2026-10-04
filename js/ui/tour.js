@@ -4,7 +4,7 @@ import { trueUnitCost, orderTotal } from "../data/quotes.js";
 import { buildMarkdown, buildHTML, download } from "./export.js";
 
 const esc = (s) =>
-  String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const inr = (n) => "Rs " + n.toLocaleString("en-IN");
 
 const AUDIT_KEY = "quotelens_approvals";
@@ -25,10 +25,10 @@ function approvalLog() {
   try { return JSON.parse(localStorage.getItem(AUDIT_KEY) || "[]"); } catch { return []; }
 }
 
-let S = { scenario: null, pipeline: null, step: 0, mount: null, running: false, choice: null };
+let S = { scenario: null, pipeline: null, step: 0, mount: null, running: false, choice: null, approved: false };
 
 export function startTour(scenario, mount) {
-  S = { scenario, pipeline: null, step: 0, mount, running: false, choice: null, confirmed: {} };
+  S = { scenario, pipeline: null, step: 0, mount, running: false, choice: null, approved: false, confirmed: {}, runToken: 0 };
   render();
 }
 
@@ -99,8 +99,9 @@ function costTable(scn, highlight) {
 }
 
 function agentCards() {
-  const { results, provider } = S.pipeline;
-  return `<p class="lede">Provider: <span class="badge">${provider === "llm" ? "LLM · live" : "MOCK · offline"}</span></p>
+  const { results, provider, fellBack } = S.pipeline;
+  const badge = provider === "llm" ? "LLM · live" : fellBack ? "MOCK · offline (LLM unreachable — fell back)" : "MOCK · offline";
+  return `<p class="lede">Provider: <span class="badge">${badge}</span></p>
   <div class="agents">${AGENTS.map((a) => {
     const r = results[a.id] || {};
     return `<div class="agent"><div class="agent-head"><strong>${esc(a.label)}</strong>
@@ -154,7 +155,7 @@ function render() {
       ${costTable(scn, cheapestId)}
       <p class="lede">🔢 <code>true = unit + (GST extra ? unit×rate : 0) + delivery ÷ qty</code> —
       computed deterministically in code. The LLM explains the result; it never does the math.</p>
-      <p class="lede">Rs 1,850 <i>looked</i> cheapest. It isn't.</p>`
+      <p class="lede">Rs 1,850 <i>looked</i> like the honest middle pick — until 18% GST landed on top of it.</p>`
       : `<h2>True-cost table</h2><p class="lede">Run the pipeline first (step 2).</p>
         <button class="primary" data-go="1">← Go to Extract</button>`,
 
@@ -183,6 +184,13 @@ function render() {
       every flagged uncertainty with your own eyes before the approval unlocks.</div>
       <div class="grid">${scn.quotes.map((qq) => {
         const t = trueUnitCost(qq, b.quantity);
+        const infeasible = (qq.extracted.minOrder || 0) > b.quantity;
+        if (infeasible) return `<div class="card gate ineligible">
+          <h4>${esc(qq.supplier)}</h4>
+          <div class="gate-price">${inr(t)}<span>/unit true</span></div>
+          <div class="mut">Needs min order ${qq.extracted.minOrder} ${esc(b.unit)} — you need ${b.quantity}. Excluded from this order.</div>
+          <div class="badge">⛔ min-order trap</div>
+        </div>`;
         return `<button class="card gate ${S.choice === qq.id ? "chosen" : ""}" data-pick="${esc(qq.id)}">
           <h4>${esc(qq.supplier)}</h4>
           <div class="gate-price">${inr(t)}<span>/unit true</span></div>
@@ -200,10 +208,10 @@ function render() {
         `</button>` : ""}`;
     },
 
-    // 6 — Purchase summary
+    // 6 — Purchase summary (only reachable after explicit human approval)
     () => {
-      if (!S.choice)
-        return `<h2>Purchase summary</h2><p class="lede">Approve a supplier first (step 5).</p>
+      if (!S.approved)
+        return `<h2>Purchase summary</h2><p class="lede">Approve a supplier first (step 5) — the summary unlocks only after your explicit approval.</p>
           <button class="primary" data-go="4">← Go to approval</button>`;
       const q = scn.quotes.find((x) => x.id === S.choice);
       const t = trueUnitCost(q, b.quantity);
@@ -246,19 +254,24 @@ function render() {
 
   S.mount.querySelectorAll("[data-go]").forEach((b) =>
     b.addEventListener("click", () => {
+      const target = parseInt(b.dataset.go, 10);
       if (b.id === "approveBtn" && S.choice) {
         const q = S.scenario.quotes.find((x) => x.id === S.choice);
-        if (q) logApproval(S.scenario, q);
+        if (q) { logApproval(S.scenario, q); S.approved = true; }
       }
-      go(parseInt(b.dataset.go, 10));
+      // The gate: step 5 (purchase summary) is unreachable without explicit approval —
+      // nav rail / Next buttons cannot bypass it.
+      if (target === 5 && !S.approved && b.id !== "approveBtn") return;
+      go(target);
     })
   );
   S.mount.querySelectorAll("[data-pick]").forEach((b) =>
-    b.addEventListener("click", () => { S.choice = b.dataset.pick; render(); })
+    b.addEventListener("click", () => { S.choice = b.dataset.pick; S.approved = false; render(); })
   );
   S.mount.querySelectorAll("[data-flag]").forEach((cb) =>
     cb.addEventListener("change", () => {
       S.confirmed[cb.dataset.flag] = cb.checked;
+      S.approved = false;
       render();
     })
   );
@@ -266,19 +279,22 @@ function render() {
   const runBtn = S.mount.querySelector("#runBtn");
   if (runBtn) runBtn.addEventListener("click", async () => {
     S.running = true;
+    const myRun = ++S.runToken;
     render();
     const status = S.mount.querySelector("#runStatus");
-    await runPipeline(scn, ({ type, agent, result }) => {
-      if (!status) return;
-      if (type === "start")
-        status.innerHTML += `<div class="runline" id="rl-${agent}">⏳ ${esc(agent)}…</div>`;
-      else {
-        const el = status.querySelector(`#rl-${agent}`);
-        if (el) el.innerHTML = `✅ ${esc(agent)} — ${esc((result.summary || "").slice(0, 90))}…`;
-      }
-    }).then((p) => { S.pipeline = p; });
-    S.running = false;
-    render();
+    try {
+      await runPipeline(scn, ({ type, agent, result }) => {
+        if (!status) return;
+        if (type === "start")
+          status.innerHTML += `<div class="runline" id="rl-${agent}">⏳ ${esc(agent)}…</div>`;
+        else {
+          const el = status.querySelector(`#rl-${agent}`);
+          if (el) el.innerHTML = `✅ ${esc(agent)} — ${esc(String(result.summary || "").slice(0, 90))}…`;
+        }
+      }).then((p) => { if (S.runToken === myRun) S.pipeline = p; });
+    } finally {
+      if (S.runToken === myRun) { S.running = false; render(); }
+    }
   });
 
   const dlMd = S.mount.querySelector("#dlMd");

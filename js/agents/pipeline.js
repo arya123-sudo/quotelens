@@ -31,5 +31,9 @@ export async function runPipeline(scenario, onEvent) {
     results[a.id].durationMs = Math.round(performance.now() - t0);
     onEvent?.({ type: "done", agent: a.id, result: results[a.id] });
   }
-  return { provider: provider.name, results };
+  // Honest provenance: if the LLM was configured but every stage fell back to
+  // mock, say so — never label a mock run "llm".
+  const fellBack = provider.name !== "mock" &&
+    Object.values(results).every((r) => r.provider === "mock");
+  return { provider: fellBack ? "mock" : provider.name, fellBack, results };
 }

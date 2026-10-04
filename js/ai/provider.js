@@ -73,9 +73,9 @@ function derive(agent, scn) {
       for (const { q, true: t } of rows) {
         const e = q.extracted;
         if (e.gst === "extra")
-          findings.push(`Hidden cost — ${q.id}: headline Rs ${e.unitPrice} hides ${inr(Math.round(e.unitPrice * e.gstRate))}/unit GST → true ${inr(t)}`);
+          findings.push(`Hidden cost — ${q.id}: headline Rs ${e.unitPrice} hides ${inr(Math.round((e.unitPrice / (e.perUnitQty || 1)) * e.gstRate))}/unit GST → true ${inr(t)}`);
         if (e.minOrder > qty)
-          findings.push(`Trap — ${q.id}: minimum order ${e.minOrder} > need ${qty}; you'd buy double`);
+          findings.push(`Trap — ${q.id}: minimum order ${e.minOrder} > need ${qty}; ineligible for this order`);
         if (e.advancePct >= 50)
           findings.push(`Cashflow — ${q.id}: ${e.advancePct}% advance = ${inr(Math.round(orderTotal(q, qty) * e.advancePct / 100))} upfront`);
         if (e.validDays <= 5)
@@ -85,18 +85,24 @@ function derive(agent, scn) {
         findings, confidence: "medium", evidenceRefs: scn.quotes.map((q) => q.id) };
     }
     case "recommend": {
-      const runner = byTrue[1];
+      const feasible = byTrue.filter(({ q }) => (q.extracted.minOrder || 0) <= qty);
+      const excluded = byTrue.filter(({ q }) => (q.extracted.minOrder || 0) > qty);
+      const pool = feasible.length ? feasible : byTrue; // degenerate case: rank all, flag clearly
+      const cheapestF = pool[0];
+      const runner = pool[1];
       const findings = [
-        `1st — ${cheapest.q.id} ${cheapest.q.supplier}: ${inr(cheapest.true)}/unit all-in, ` +
-          `${cheapest.q.extracted.deliveryDays}-day delivery. Trade-off: ${cheapest.q.extracted.warrantyMonths}-month warranty, ${cheapest.q.extracted.advancePct}% advance.`,
-        `2nd — ${runner.q.id} ${runner.q.supplier}: ${inr(runner.true)}/unit ` +
-          `(${inr(runner.true - cheapest.true)}/unit more than cheapest).`,
-        `Not recommended — ${byTrue[2].q.id}: ${byTrue[2].q.extracted.minOrder > qty ? "min-order trap" : "highest true cost"}.`,
+        `1st — ${cheapestF.q.id} ${cheapestF.q.supplier}: ${inr(cheapestF.true)}/unit all-in, ` +
+          `${cheapestF.q.extracted.deliveryDays}-day delivery. Trade-off: ${cheapestF.q.extracted.warrantyMonths}-month warranty, ${cheapestF.q.extracted.advancePct}% advance.`,
       ];
+      if (runner) findings.push(
+        `2nd — ${runner.q.id} ${runner.q.supplier}: ${inr(runner.true)}/unit ` +
+          `(${inr(runner.true - cheapestF.true)}/unit more than cheapest).`);
+      for (const { q } of excluded) findings.push(
+        `Excluded — ${q.id} ${q.supplier}: min order ${q.extracted.minOrder} > need ${qty}; not eligible for this order.`);
       return {
-        summary: `Best value: ${cheapest.q.supplier} — but the trade-offs are yours to weigh. The agent never spends your money.`,
+        summary: `Best value: ${cheapestF.q.supplier} — but the trade-offs are yours to weigh. The agent never spends your money.`,
         findings, confidence: "medium",
-        evidenceRefs: [cheapest.q.id, runner.q.id],
+        evidenceRefs: [cheapestF.q.id, ...(runner ? [runner.q.id] : [])],
       };
     }
     default:
@@ -116,20 +122,30 @@ const PROMPTS = {
   extract:
     "You are the Extract Agent of QuoteLens, a purchase-approval agent for small businesses. Parse supplier quotes (OCR text, may contain [illegible] spans) into structured fields. Return JSON: {summary, findings[], confidence: high|medium|low, evidenceRefs[]}. List anything you could not parse under an UNREADABLE flag. Data is synthetic demo data.",
   normalize:
-    "You are the Normalize Agent. Compute true per-unit cost = headline price + GST (if extra) + deliveryCharge ÷ quantity. Return JSON: {summary, findings[], confidence, evidenceRefs[]}. Show your math per quote.",
+    "You are the Normalize Agent. Explain the true per-unit cost for each quote: headline price + GST (if extra) + deliveryCharge ÷ quantity, converting pack sizes first. The authoritative numbers are computed deterministically in code — your job is to explain them in plain language, not to invent your own. Return JSON: {summary, findings[], confidence, evidenceRefs[]}. Show the formula with the scenario's numbers per quote.",
   compare:
     "You are the Compare Agent. Find deltas, outliers, hidden costs (GST-extra headlines, delivery fees), and traps (min order above need, short validity, high advance). Return JSON: {summary, findings[], confidence, evidenceRefs[]}.",
   recommend:
     "You are the Recommend Agent. Rank the quotes by true value with plain-language reasons and named trade-offs. Return JSON: {summary, findings[], confidence, evidenceRefs[]}. Never claim to make the purchase decision — the human approves.",
 };
 
+const CONFIDENCE = new Set(["high", "medium", "low", "uncertain"]);
+
 function safeJson(text) {
+  let o;
   try {
-    const m = text.match(/\{[\s\S]*\}/);
-    return JSON.parse(m ? m[0] : text);
+    const m = String(text).match(/\{[\s\S]*\}/);
+    o = JSON.parse(m ? m[0] : text);
   } catch {
-    return { summary: text.slice(0, 300), findings: [], confidence: "uncertain", evidenceRefs: [] };
+    o = {};
   }
+  // Validate untrusted model output: wrong types must never reach the UI.
+  return {
+    summary: typeof o.summary === "string" ? o.summary.slice(0, 2000) : "No summary returned.",
+    findings: Array.isArray(o.findings) ? o.findings.filter((f) => typeof f === "string").slice(0, 50) : [],
+    confidence: CONFIDENCE.has(o.confidence) ? o.confidence : "uncertain",
+    evidenceRefs: Array.isArray(o.evidenceRefs) ? o.evidenceRefs.filter((r) => typeof r === "string").slice(0, 50) : [],
+  };
 }
 
 export class LLMProvider {
@@ -139,10 +155,13 @@ export class LLMProvider {
     this.fallback = new MockProvider();
   }
   async analyze(agent, { scenario, prior }) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 20000);
     try {
       const base = this.cfg.baseUrl.replace(/\/$/, "");
       const res = await fetch(`${base}/chat/completions`, {
         method: "POST",
+        signal: ctrl.signal,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${this.cfg.apiKey}`,
@@ -162,7 +181,11 @@ export class LLMProvider {
       const text = data.choices?.[0]?.message?.content || "{}";
       return { agent, provider: "llm", ...safeJson(text) };
     } catch {
-      return this.fallback.analyze(agent, { scenario });
+      // Honest fallback: label the stage with what actually ran.
+      const fb = await this.fallback.analyze(agent, { scenario });
+      return { ...fb, provider: "mock", fellBack: true };
+    } finally {
+      clearTimeout(timer);
     }
   }
 }

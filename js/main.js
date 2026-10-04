@@ -51,13 +51,14 @@ function whyPage() {
 
 function openSettings() {
   const s = loadSettings();
+  const q = (v) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   const wrap = document.createElement("div");
   wrap.className = "modal-wrap";
   wrap.innerHTML = `<div class="modal"><h3>AI provider settings</h3>
     <p class="lede">Leave empty to use the offline mock provider. Keys stay in this browser only.</p>
-    <label>Base URL (OpenAI-compatible)<input id="sBase" value="${s.baseUrl || ""}" placeholder="https://api.openai.com/v1"></label>
-    <label>API key<input id="sKey" type="password" value="${s.apiKey || ""}" placeholder="sk-…"></label>
-    <label>Model<input id="sModel" value="${s.model || "gpt-4o-mini"}"></label>
+    <label>Base URL (OpenAI-compatible)<input id="sBase" value="${q(s.baseUrl)}" placeholder="https://api.openai.com/v1"></label>
+    <label>API key<input id="sKey" type="password" value="${q(s.apiKey)}" placeholder="sk-…"></label>
+    <label>Model<input id="sModel" value="${q(s.model) || "gpt-4o-mini"}"></label>
     <div class="modal-btns"><button id="sCancel">Cancel</button>
     <button class="primary" id="sSave">Save</button></div></div>`;
   document.body.appendChild(wrap);

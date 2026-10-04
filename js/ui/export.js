@@ -26,8 +26,11 @@ export function buildMarkdown(scn, pipeline, choiceId) {
     `GST ${e.gst} · ${e.deliveryDays}-day delivery · ${e.warrantyMonths ?? "—"}-month warranty · ${e.advancePct}% advance · valid ${e.validDays} days`, "");
   if (pipeline) {
     L.push(`## Agent run (${pipeline.provider} provider)`);
-    for (const [id, r] of Object.entries(pipeline.results))
-      L.push(`- ${id}: ${r.summary} (${r.durationMs}ms, confidence ${r.confidence})`);
+    for (const [id, r] of Object.entries(pipeline.results)) {
+      // Model text is content, never structure: flatten newlines and strip heading marks.
+      const safe = String(r.summary ?? "").replace(/\s+/g, " ").replace(/^#+\s*/, "").slice(0, 500);
+      L.push(`- ${id}: ${safe} (${r.durationMs}ms, confidence ${r.confidence})`);
+    }
     L.push("");
   }
   L.push(`## Human approval`, `Approved by the buyer. The agent recommends — it never spends money.`, "");
@@ -36,7 +39,7 @@ export function buildMarkdown(scn, pipeline, choiceId) {
 }
 
 export function buildHTML(scn, pipeline, choiceId) {
-  const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const md = buildMarkdown(scn, pipeline, choiceId)
     .split("\n")
     .map((line) => {
@@ -53,7 +56,8 @@ export function buildHTML(scn, pipeline, choiceId) {
       return `<p>${esc(line)}</p>`;
     })
     .join("\n")
-    .replace(/<tr>/g, (m, o, s) => s.slice(0, o).endsWith("</h2>\n<tr><td>Supplier") ? "<table><tr>" : m);
+    // Wrap the consecutive comparison-table rows in a real <table>.
+    .replace(/(<tr>[\s\S]*?<\/tr>(?:\n<tr>[\s\S]*?<\/tr>)*)/, "<table>$1</table>");
   return `<!doctype html><html><head><meta charset="utf-8"><title>QuoteLens Summary — ${esc(scn.id)}</title>` +
     `<style>body{font-family:system-ui,sans-serif;max-width:760px;margin:2rem auto;padding:0 1rem;color:#111}h2{margin-top:2rem;color:#1e40af}blockquote{background:#fef3c7;padding:.75rem;border-left:4px solid #f59e0b}table{border-collapse:collapse;width:100%}td{border:1px solid #ddd;padding:.4rem .6rem;font-size:.9rem}</style>` +
     `</head><body>${md}</body></html>`;
