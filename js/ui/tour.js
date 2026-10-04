@@ -106,6 +106,7 @@ function agentCards() {
     const r = results[a.id] || {};
     return `<div class="agent"><div class="agent-head"><strong>${esc(a.label)}</strong>
       <span class="dur">${r.durationMs ?? "—"}ms</span></div>
+      <span class="prov">Provider: ${r.provider === "llm" ? "LLM" : (r.fellBack ? "mock (fallback)" : "mock")}</span>
       <div class="adesc">${esc(a.desc)}</div>
       <p>${esc(r.summary || "")}</p>
       <ul>${(r.findings || []).map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
