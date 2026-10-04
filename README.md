@@ -8,6 +8,8 @@ the spend. **Agents propose, humans dispose.**
 
 **Live demo:** https://quotelens-xi.vercel.app/#/demo
 
+**Demo video (90s):** https://drive.google.com/file/d/1UXcKNGX4Hn3Eb5mEGTV-8Jh8srO-s0Jv/view?usp=drivesdk
+
 ## How it works
 
 Extract -> Normalize -> Compare -> Recommend -> Human approval -> Purchase summary
