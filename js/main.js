@@ -1,4 +1,4 @@
-// App boot + hash router: #/demo (judge tour), #/why (positioning), settings modal.
+﻿// App boot + hash router: #/demo (judge tour), #/why (positioning), settings modal.
 import { SCENARIOS } from "./data/quotes.js";
 import { startTour } from "./ui/tour.js";
 import { loadSettings, saveSettings, getProvider, providerBadge } from "./ai/provider.js";
@@ -32,7 +32,7 @@ function whyPage() {
   view.innerHTML = `<div class="why">
     <h1>Why QuoteLens</h1>
     <p class="lede"><b>"Wortal helps you send quotes. Nothing helps you read them."</b></p>
-    <p class="lede">India's ~6.3 crore MSMEs run on WhatsApp. Supplier quotes arrive as photos,
+    <p class="lede">India's ~7.3 crore micro-enterprises coordinate on WhatsApp. Supplier quotes arrive as photos,
     PDFs, and text notes — and the owner compares them in their head. Enterprise buyers have
     procurement suites; sell-side tools help you <i>send</i> quotes. Nobody helps a
     micro-business <i>read</i> the quotes coming at it.</p>

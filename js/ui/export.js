@@ -1,4 +1,4 @@
-// Purchase summary export: Markdown + HTML + download helper. Print-to-PDF via window.print().
+﻿// Purchase summary export: Markdown + HTML + download helper. Print-to-PDF via window.print().
 import { trueUnitCost, orderTotal } from "../data/quotes.js";
 
 const inr = (n) => "Rs " + n.toLocaleString("en-IN");
@@ -21,7 +21,7 @@ export function buildMarkdown(scn, pipeline, choiceId) {
   L.push(`| Supplier | Headline | True /unit | Order total |`);
   L.push(`|---|---|---|---|`);
   for (const x of scn.quotes)
-    L.push(`| ${x.supplier} | ${inr(x.extracted.unitPrice)} | ${inr(trueUnitCost(x, qty))} | ${inr(orderTotal(x, qty))} |`);
+    L.push(`| ${x.supplier} | ${inr(x.extracted.unitPrice)}${x.extracted.perUnitQty !== 1 ? ` per ${x.extracted.perUnitQty} ${x.extracted.perUnit}` : ""} | ${inr(trueUnitCost(x, qty))} | ${inr(orderTotal(x, qty))} |`);
   L.push("", `## Approved supplier`, `**${q.supplier}** — ${inr(t)}/unit, order total **${inr(total)}**`,
     `GST ${e.gst} · ${e.deliveryDays}-day delivery · ${e.warrantyMonths ?? "—"}-month warranty · ${e.advancePct}% advance · valid ${e.validDays} days`, "");
   if (pipeline) {

@@ -1,4 +1,4 @@
-// The 7-step judge tour for QuoteLens. Frozen demo script — see PROJECT_SPEC.md §4.
+﻿// The 7-step judge tour for QuoteLens. Frozen demo script — see PROJECT_SPEC.md §4.
 import { runPipeline, AGENTS } from "../agents/pipeline.js";
 import { trueUnitCost, orderTotal } from "../data/quotes.js";
 import { buildMarkdown, buildHTML, download } from "./export.js";
@@ -85,8 +85,8 @@ function costTable(scn, highlight) {
     const t = trueUnitCost(q, qty);
     return `<tr class="${q.id === highlight ? "winner" : ""}">
       <td><b>${esc(q.supplier)}</b><br><span class="mut">${esc(q.id)}</span></td>
-      <td>${inr(e.unitPrice)}</td>
-      <td>${e.gst === "extra" ? `+${inr(Math.round(e.unitPrice * e.gstRate))}` : e.gst === "included" ? "incl." : "?"}</td>
+      <td>${inr(e.unitPrice)}${e.perUnitQty !== 1 ? ` <span class="mut">per ${e.perUnitQty} ${esc(e.perUnit)}</span>` : ""}</td>
+      <td>${e.gst === "extra" ? `+${inr(Math.round((e.unitPrice / (e.perUnitQty || 1)) * e.gstRate))}` : e.gst === "included" ? "incl." : "?"}</td>
       <td>${e.deliveryDays}d${e.deliveryCharge ? ` (+${inr(e.deliveryCharge)})` : " free"}</td>
       <td>${e.warrantyMonths ?? "—"} mo</td>
       <td>${e.advancePct}%</td>
